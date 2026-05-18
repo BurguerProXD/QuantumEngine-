@@ -1,7 +1,7 @@
 name: Build Quantum Engine 2D
 
 on:
-  workflow_dispatch:   # Ejecución manual
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -13,8 +13,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Crear proyecto WPF
-        run: dotnet new wpf -n QuantumEditor -o QuantumEditor --framework net48
+      - name: Crear proyecto WPF (.NET 8)
+        run: dotnet new wpf -n QuantumEditor -o QuantumEditor --framework net8.0
         shell: pwsh
 
       - name: Agregar paquetes NuGet
@@ -27,21 +27,20 @@ jobs:
           dotnet add package AvalonDock --version 4.72.0
         shell: pwsh
 
-      - name: Agregar referencias a Windows Forms
+      - name: Habilitar Windows Forms en el proyecto
         run: |
           cd QuantumEditor
           $csproj = Get-Content QuantumEditor.csproj
-          $csproj = $csproj -replace '</Project>', @'
-            <ItemGroup>
-              <Reference Include="System.Windows.Forms" />
-              <Reference Include="WindowsFormsIntegration" />
-            </ItemGroup>
-          </Project>
-          '@
-          Set-Content QuantumEditor.csproj $csproj
+          # Agregar <UseWindowsForms>true</UseWindowsForms> si no existe
+          if ($csproj -notmatch 'UseWindowsForms') {
+              $csproj = $csproj -replace '</PropertyGroup>', '    <UseWindowsForms>true</UseWindowsForms>
+        </PropertyGroup>'
+              Set-Content QuantumEditor.csproj $csproj
+          }
         shell: pwsh
 
       - name: Escribir archivos fuente del editor
+        # (El mismo paso que en el mensaje anterior, pero sin cambios)
         run: |
           # App.xaml
           @'
@@ -64,7 +63,7 @@ jobs:
           namespace QuantumEditor { public partial class App : Application { } }
           '@ | Set-Content QuantumEditor\App.xaml.cs -Encoding UTF8
 
-          # MainWindow.xaml (debe contener los namespaces correctos)
+          # MainWindow.xaml (idéntico al anterior)
           @'
           <Window x:Class="QuantumEditor.MainWindow"
                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -153,7 +152,6 @@ jobs:
               </Grid>
           </Window>
           '@ | Set-Content QuantumEditor\MainWindow.xaml -Encoding UTF8
-
         shell: pwsh
 
       - name: Escribir código C# del editor
@@ -211,7 +209,7 @@ jobs:
                       ViewportElement.InvalidateVisual();
                   }
 
-                  private void NewProject_Click(object sender, RoutedEventArgs e) { /* implementación simplificada */ }
+                  private void NewProject_Click(object sender, RoutedEventArgs e) { /* simplificado */ }
                   private void OpenProject_Click(object sender, RoutedEventArgs e) { }
                   private void ExportProject_Click(object sender, RoutedEventArgs e) { }
                   private void Exit_Click(object sender, RoutedEventArgs e) => Close();
