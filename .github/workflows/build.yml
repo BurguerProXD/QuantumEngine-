@@ -13,12 +13,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Crear proyecto WPF
-        run: dotnet new wpf -n QuantumEditor -o QuantumEditor --framework net8.0
-        shell: pwsh
-
-      - name: Agregar paquetes NuGet
+      - name: Create project and add packages
         run: |
+          dotnet new wpf -n QuantumEditor -o QuantumEditor --framework net8.0
           cd QuantumEditor
           dotnet add package MoonSharp --version 2.0.0.0
           dotnet add package SkiaSharp --version 2.88.6
@@ -27,7 +24,7 @@ jobs:
           dotnet add package AvalonDock --version 4.72.0
         shell: pwsh
 
-      - name: Habilitar WindowsForms
+      - name: Enable WindowsForms
         run: |
           cd QuantumEditor
           $csproj = Get-Content QuantumEditor.csproj -Raw
@@ -37,9 +34,8 @@ jobs:
           }
         shell: pwsh
 
-      - name: Generar código fuente del editor
+      - name: Write App.xaml and App.xaml.cs
         run: |
-          # App.xaml
           @'
           <Application x:Class="QuantumEditor.App"
                        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -54,13 +50,14 @@ jobs:
           </Application>
           '@ | Set-Content QuantumEditor\App.xaml -Encoding UTF8
 
-          # App.xaml.cs
           @'
           using System.Windows;
           namespace QuantumEditor { public partial class App : Application { } }
           '@ | Set-Content QuantumEditor\App.xaml.cs -Encoding UTF8
+        shell: pwsh
 
-          # MainWindow.xaml
+      - name: Write MainWindow.xaml
+        run: |
           @'
           <Window x:Class="QuantumEditor.MainWindow"
                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -149,8 +146,10 @@ jobs:
               </Grid>
           </Window>
           '@ | Set-Content QuantumEditor\MainWindow.xaml -Encoding UTF8
+        shell: pwsh
 
-          # MainWindow.xaml.cs (código completo del editor)
+      - name: Write MainWindow.xaml.cs
+        run: |
           @'
           using System;
           using System.Collections.Generic;
@@ -422,14 +421,14 @@ jobs:
           '@ | Set-Content QuantumEditor\MainWindow.xaml.cs -Encoding UTF8
         shell: pwsh
 
-      - name: Compilar
+      - name: Build
         run: |
           cd QuantumEditor
           dotnet restore
           dotnet build -c Release -o ../dist
         shell: pwsh
 
-      - name: Subir artefacto
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Quantum-Engine
