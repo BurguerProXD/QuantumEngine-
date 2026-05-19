@@ -30,20 +30,17 @@ jobs:
       - name: Habilitar Windows Forms en el proyecto
         run: |
           cd QuantumEditor
-          $csproj = Get-Content QuantumEditor.csproj
-          # Agregar <UseWindowsForms>true</UseWindowsForms> si no existe
+          $csproj = Get-Content QuantumEditor.csproj -Raw
           if ($csproj -notmatch 'UseWindowsForms') {
               $csproj = $csproj -replace '</PropertyGroup>', '    <UseWindowsForms>true</UseWindowsForms>
         </PropertyGroup>'
-              Set-Content QuantumEditor.csproj $csproj
+              Set-Content QuantumEditor.csproj $csproj -NoNewline
           }
         shell: pwsh
 
-      - name: Escribir archivos fuente del editor
-        # (El mismo paso que en el mensaje anterior, pero sin cambios)
+      - name: Escribir App.xaml y App.xaml.cs
         run: |
-          # App.xaml
-          @'
+          @"
           <Application x:Class="QuantumEditor.App"
                        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -55,16 +52,17 @@ jobs:
                   <SolidColorBrush x:Key="AccentColor" Color="#FF007ACC"/>
               </Application.Resources>
           </Application>
-          '@ | Set-Content QuantumEditor\App.xaml -Encoding UTF8
+          "@ | Set-Content QuantumEditor\App.xaml -Encoding UTF8
 
-          # App.xaml.cs
-          @'
+          @"
           using System.Windows;
           namespace QuantumEditor { public partial class App : Application { } }
-          '@ | Set-Content QuantumEditor\App.xaml.cs -Encoding UTF8
+          "@ | Set-Content QuantumEditor\App.xaml.cs -Encoding UTF8
+        shell: pwsh
 
-          # MainWindow.xaml (idéntico al anterior)
-          @'
+      - name: Escribir MainWindow.xaml
+        run: |
+          @"
           <Window x:Class="QuantumEditor.MainWindow"
                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -151,12 +149,12 @@ jobs:
                   </avalonDock:DockingManager>
               </Grid>
           </Window>
-          '@ | Set-Content QuantumEditor\MainWindow.xaml -Encoding UTF8
+          "@ | Set-Content QuantumEditor\MainWindow.xaml -Encoding UTF8
         shell: pwsh
 
-      - name: Escribir código C# del editor
+      - name: Escribir MainWindow.xaml.cs
         run: |
-          @'
+          @"
           using System;
           using System.Collections.Generic;
           using System.ComponentModel;
@@ -424,7 +422,7 @@ jobs:
                   }
               }
           }
-          '@ | Set-Content QuantumEditor\MainWindow.xaml.cs -Encoding UTF8
+          "@ | Set-Content QuantumEditor\MainWindow.xaml.cs -Encoding UTF8
         shell: pwsh
 
       - name: Compilar
