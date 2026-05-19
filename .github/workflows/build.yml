@@ -1,19 +1,15 @@
 name: Build Quantum Engine 2D
-
 on:
   workflow_dispatch:
   push:
     branches: [ main ]
-
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Create project and add packages
+      - name: Crear proyecto WPF y agregar paquetes
         run: |
           dotnet new wpf -n QuantumEditor -o QuantumEditor --framework net8.0
           cd QuantumEditor
@@ -23,8 +19,7 @@ jobs:
           dotnet add package AvalonEdit --version 6.3.0.90
           dotnet add package AvalonDock --version 4.72.0
         shell: pwsh
-
-      - name: Enable WindowsForms
+      - name: Habilitar WindowsForms
         run: |
           cd QuantumEditor
           $csproj = Get-Content QuantumEditor.csproj -Raw
@@ -33,402 +28,26 @@ jobs:
               Set-Content QuantumEditor.csproj $csproj -NoNewline
           }
         shell: pwsh
-
-      - name: Write App.xaml and App.xaml.cs
+      - name: Decodificar archivos fuente
         run: |
-          @'
-          <Application x:Class="QuantumEditor.App"
-                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                       StartupUri="MainWindow.xaml">
-              <Application.Resources>
-                  <SolidColorBrush x:Key="BackgroundDark" Color="#FF1E1E1E"/>
-                  <SolidColorBrush x:Key="PanelDark" Color="#FF2D2D2D"/>
-                  <SolidColorBrush x:Key="ForegroundLight" Color="#FFDCDCDC"/>
-                  <SolidColorBrush x:Key="AccentColor" Color="#FF007ACC"/>
-              </Application.Resources>
-          </Application>
-          '@ | Set-Content QuantumEditor\App.xaml -Encoding UTF8
-
-          @'
-          using System.Windows;
-          namespace QuantumEditor { public partial class App : Application { } }
-          '@ | Set-Content QuantumEditor\App.xaml.cs -Encoding UTF8
+          # App.xaml
+          [System.IO.File]::WriteAllBytes("QuantumEditor\App.xaml", [System.Convert]::FromBase64String("PFByb2plY3QgU2RrPSJNaWNyb3NvZnQuTkVULlNkayI+DQogIDxQcm9wZXJ0eUdyb3VwPg0KICAgIDxUYXJnZXRGcmFtZXdvcms+bmV0OC4wPC9UYXJnZXRGcmFtZXdvcms+DQogICAgPE91dHB1dFR5cGU+V2luRXhlPC9PdXRwdXRUeXBlPg0KICAgIDxVc2VXaW5kb3dzRm9ybXM+dHJ1ZTwvVXNlV2luZG93c0Zvcm1zPg0KICAgIDxVc2VXcGY+dHJ1ZTwvVXNlV3BmPg0KICA8L1Byb3BlcnR5R3JvdXA+DQo8L1Byb2plY3Q+"))
+          # App.xaml.cs
+          [System.IO.File]::WriteAllBytes("QuantumEditor\App.xaml.cs", [System.Convert]::FromBase64String("dXNpbmcgU3lzdGVtLldpbmRvd3M7DQpuYW1lc3BhY2UgUXVhbnR1bUVkaXRvciB7IHB1YmxpYyBwYXJ0aWFsIGNsYXNzIEFwcCA6IEFwcGxpY2F0aW9uIHsgfSB9"))
+          # MainWindow.xaml
+          [System.IO.File]::WriteAllBytes("QuantumEditor\MainWindow.xaml", [System.Convert]::FromBase64String("PFdpbmRvdyB4OkNsYXNzPSJRdWFudHVtRWRpdG9yLk1haW5XaW5kb3ciIHhtbG5zPSJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dpbmZ4LzIwMDYveGFtbC9wcmVzZW50YXRpb24iIHhtbG5zOng9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd2luZngvMjAwNi94YW1sIiB4bWxuczphdmFsb25Eb2NrPSJodHRwczovL2dpdGh1Yi5jb20vRGlya3N0ZXI5OS9BdmFsb25Eb2NrIiB4bWxuczpza2lhPSJjbHItbmFtZXNwYWNlOlNraWFTaGFycC5WaWV3cy5XUEY7YXNzZW1ibHk9U2tpYVNoYXJwLlZpZXdzLldQRiIgeG1sbnM6YXZhbG9uZWRpdD0iaHR0cDovL2ljc2hhcnBjb2RlLm5ldC9zaGFycGRldmVsb3AvYXZhbG9uZWRpdCIgVGl0bGU9IlF1YW50dW0gRW5naW5lIDJEIiBIZWlnaHQ9IjgwMCIgV2lkdGg9IjEyMDAiIEJhY2tncm91bmQ9IntTdGF0aWNSZXNvdXJjZSBCYWNrZ3JvdW5kRGFya30iPg0KICAgICAgICAgIDxHcmlkPg0KICAgICAgICAgICAgICA8R3JpZC5Sb3dEZWZpbml0aW9ucz4NCiAgICAgICAgICAgICAgICAgIDxSb3dEZWZpbml0aW9uIEhlaWdodD0iQXV0byIvPg0KICAgICAgICAgICAgICAgICAgPFJvd0RlZmluaXRpb24gSGVpZ2h0PSIqIi8+DQogICAgICAgICAgICAgIDwvR3JpZC5Sb3dEZWZpbml0aW9ucz4NCiAgICAgICAgICAgICAgPE1lbnUgR3JpZC5Sb3c9IjAiIEJhY2tncm91bmQ9IntTdGF0aWNSZXNvdXJjZSBQYW5lbERhcmt9IiBGb3JlZ3JvdW5kPSJ7U3RhdGljUmVzb3VyY2UgRm9yZWdyb3VuZExpZ2h0fSI+DQogICAgICAgICAgICAgICAgICA8TWVudUl0ZW0gSGVhZGVyPSJfQXJjaGl2byI+DQogICAgICAgICAgICAgICAgICAgICAgPE1lbnVJdGVtIEhlYWRlcj0iX051ZXZvIHByb3llY3RvLi4uIiBDbGljaz0iTmV3UHJvamVjdF9DbGljayIvPg0KICAgICAgICAgICAgICAgICAgICAgIDxNZW51SXRlbSBIZWFkZXI9Il9BYnJpciBwcm95ZWN0by4uLiIgQ2xpY2s9Ik9wZW5Qcm9qZWN0X0NsaWNrIi8+DQogICAgICAgICAgICAgICAgICAgICAgPFNlcGFyYXRvci8+DQogICAgICAgICAgICAgICAgICAgICAgPE1lbnVJdGVtIEhlYWRlcj0iX0V4cG9ydGFyIGEgLmV4ZSIgQ2xpY2s9IkV4cG9ydFByb2plY3RfQ2xpY2siLz4NCiAgICAgICAgICAgICAgICAgICAgICA8U2VwYXJhdG9yLz4NCiAgICAgICAgICAgICAgICAgICAgICA8TWVudUl0ZW0gSGVhZGVyPSJfU2FsaXIiIENsaWNrPSJFeGl0X0NsaWNrIi8+DQogICAgICAgICAgICAgICAgICA8L01lbnVJdGVtPg0KICAgICAgICAgICAgICAgICAgPE1lbnVJdGVtIEhlYWRlcj0iX0VkaXRhciI+DQogICAgICAgICAgICAgICAgICAgICAgPE1lbnVJdGVtIEhlYWRlcj0iX0Rlc2hhY2VyIiBDbGljaz0iVW5kb19DbGljayIvPg0KICAgICAgICAgICAgICAgICAgICAgIDxNZW51SXRlbSBIZWFkZXI9Il9SZWhhY2VyIiBDbGljaz0iUmVkb19DbGljayIvPg0KICAgICAgICAgICAgICAgICAgPC9NZW51SXRlbT4NCiAgICAgICAgICAgICAgPC9NZW51Pg0KICAgICAgICAgICAgICA8YXZhbG9uRG9jazpEb2NraW5nTWFuYWdlciBHcmlkLlJvdz0iMSIgeDpOYW1lPSJEb2NrTWFuYWdlciIgQWxsb3dNaXhlZE9yaWVudGF0aW9uPSJUcnVlIiBCb3JkZXJUaGlja25lc3M9IjAiIEJhY2tncm91bmQ9IntTdGF0aWNSZXNvdXJjZSBCYWNrZ3JvdW5kRGFya30iPg0KICAgICAgICAgICAgICAgICAgPGF2YWxvbkRvY2s6RG9ja2luZ01hbmFnZXIuVGhlbWU+DQogICAgICAgICAgICAgICAgICAgICAgPGF2YWxvbkRvY2s6VnMyMDEzRGFya1RoZW1lLz4NCiAgICAgICAgICAgICAgICAgIDwvYXZhbG9uRG9jazpEb2NraW5nTWFuYWdlci5UaGVtZT4NCiAgICAgICAgICAgICAgICAgIDxhdmFsb25Eb2NrOkxheW91dFJvb3Q+DQogICAgICAgICAgICAgICAgICAgICAgPGF2YWxvbkRvY2s6TGF5b3V0UGFuZWwgT3JpZW50YXRpb249Ikhvcml6b250YWwiPg0KICAgICAgICAgICAgICAgICAgICAgICAgICA8YXZhbG9uRG9jazpMYXlvdXRBbmNob3JhYmxlUGFuZSBEb2NrV2lkdGg9IjI1MCI+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8YXZhbG9uRG9jazpMYXlvdXRBbmNob3JhYmxlIFRpdGxlPSJFeHBsb3JhZG9yIiBDYW5DbG9zZT0iRmFsc2UiIENhbkF1dG9IaWRlPSJGYWxzZSI+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFRyZWVWaWV3IHg6TmFtZT0iRXhwbG9yZXJUcmVlIiBCYWNrZ3JvdW5kPSJ7U3RhdGljUmVzb3VyY2UgQmFja2dyb3VuZERhcmt9IiBGb3JlZ3JvdW5kPSJ7U3RhdGljUmVzb3VyY2UgRm9yZWdyb3VuZExpZ2h0fSIgQm9yZGVyVGhpY2tuZXNzPSIwIiBTZWxlY3RlZEl0ZW1DaGFuZ2VkPSJFeHBsb3JlclRyZWVfU2VsZWN0ZWRJdGVtQ2hhbmdlZCIvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hdmFsb25Eb2NrOkxheW91dEFuY2hvcmFibGU+DQogICAgICAgICAgICAgICAgICAgICAgICAgIDwvYXZhbG9uRG9jazpMYXlvdXRBbmNob3JhYmxlUGFuZT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgPGF2YWxvbkRvY2s6TGF5b3V0RG9jdW1lbnRQYW5lPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGF2YWxvbkRvY2s6TGF5b3V0RG9jdW1lbnQgVGl0bGU9IkVzY2VuYSIgQ2FuQ2xvc2U9IkZhbHNlIj4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8R3JpZCBCYWNrZ3JvdW5kPSJ7U3RhdGljUmVzb3VyY2UgQmFja2dyb3VuZERhcmt9Ij4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEdyaWQuUm93RGVmaW5pdGlvbnM+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8Um93RGVmaW5pdGlvbiBIZWlnaHQ9IkF1dG8iLz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxSb3dEZWZpbml0aW9uIEhlaWdodD0iKiIvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L0dyaWQuUm93RGVmaW5pdGlvbnM+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxUb29sQmFyIEdyaWQuUm93PSIwIiBCYWNrZ3JvdW5kPSJ7U3RhdGljUmVzb3VyY2UgUGFuZWxEYXJrfSI+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8QnV0dG9uIENvbnRlbnQ9Ik1vdmVyIiBDbGljaz0iVG9vbF9Nb3ZlX0NsaWNrIi8+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8QnV0dG9uIENvbnRlbnQ9IlJvdGFyIiBDbGljaz0iVG9vbF9Sb3RhdGVfQ2xpY2siLz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxCdXR0b24gQ29udGVudD0iRXNjYWxhciIgQ2xpY2s9IlRvb2xfU2NhbGVfQ2xpY2siLz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxTZXBhcmF0b3IvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEJ1dHRvbiBDb250ZW50PSLilrYgUGxheSIgQ2xpY2s9IlBsYXlfQ2xpY2siLz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxCdXR0b24gQ29udGVudD0i4pagIFN0b3AiIENsaWNrPSJTdG9wX0NsaWNrIi8+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8U2VwYXJhdG9yLz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxDaGVja0JveCBDb250ZW50PSJCbG9xdWVhciBzZWxlY2Npw7NuIiBDbGljaz0iTG9ja1NlbGVjdGlvbl9DbGljayIgRm9yZWdyb3VuZD0ie1N0YXRpY1Jlc291cmNlIEZvcmVncm91bmRMaWdodH0iIFZlcnRpY2FsQWxpZ25tZW50PSJDZW50ZXIiLz4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxTZXBhcmF0b3IvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPEJ1dHRvbiBDb250ZW50PSJBw7FhZGlyIFNwcml0ZSIgQ2xpY2s9IkFkZFNwcml0ZV9DbGljayIvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L1Rvb2xCYXJvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8c2tpYTpTS0VsZW1lbnQgR3JpZC5Sb3c9IjEiIHg6TmFtZT0iVmlld3BvcnRFbGVtZW50IiBQYWludFN1cmZhY2U9Ik9uUGFpbnRTdXJmYWNlIiBNb3VzZURvd249Ik9uVmlld3BvcnRNb3VzZURvd24iIE1vdXNlTW92ZT0iT25WaWV3cG9ydE1vdXNlTW92ZSIgTW91c2VVcD0iT25WaWV3cG9ydE1vdXNlVXAiIENsaXBUb0JvdW5kcz0iVHJ1ZSIvPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvR3JpZD4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDwvYXZhbG9uRG9jazpMYXlvdXREb2N1bWVudD4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hdmFsb25Eb2NrOkxheW91dERvY3VtZW50UGFuZT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgPGF2YWxvbkRvY2s6TGF5b3V0QW5jaG9yYWJsZVBhbmUgRG9ja1dpZHRoPSIzMDAiPg0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPGF2YWxvbkRvY2s6TGF5b3V0QW5jaG9yYWJsZSBUaXRsZT0iSW5zcGVjdG9yIiBDYW5DbG9zZT0iRmFsc2UiIENhbkF1dG9IaWRlPSJGYWxzZSI+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPFdpbmRvd3NGb3Jtc0hvc3QgeDpOYW1lPSJJbnNwZWN0b3JIb3N0Ii8+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2F2YWxvbkRvY2s6TGF5b3V0QW5jaG9yYWJsZT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxhdmFsb25Eb2NrOkxheW91dEFuY2hvcmFibGUgVGl0bGU9IlNjcmlwdCBMdWEiIENhbkNsb3NlPSJGYWxzZSIgQ2FuQXV0b0hpZGU9IkZhbHNlIj4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8YXZhbG9uZWRpdDpUZXh0RWRpdG9yIHg6TmFtZT0iU2NyaXB0RWRpdG9yIiBGb250RmFtaWx5PSJDb25zb2xhcyIgRm9udFNpemU9IjEyIiBCYWNrZ3JvdW5kPSIjRkYxRTFFMUUiIEZvcmVncm91bmQ9IiNGRkRDREM9QyRCb3JkZXJUaGlja25lc3M9IjAiIFN5bnRheEhpZ2hsaWdodGluZz0iTHVhIi8+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8L2F2YWxvbkRvY2s6TGF5b3V0QW5jaG9yYWJsZT4NCiAgICAgICAgICAgICAgICAgICAgICAgICAgPC9hdmFsb25Eb2NrOkxheW91dEFuY2hvcmFibGVQYW5lPg0KICAgICAgICAgICAgICAgICAgICAgIDwvYXZhbG9uRG9jazpMYXlvdXRQYW5lbD4NCiAgICAgICAgICAgICAgICAgIDwvYXZhbG9uRG9jazpMYXlvdXRSb290Pg0KICAgICAgICAgICAgICA8L2F2YWxvbkRvY2s6RG9ja2luZ01hbmFnZXI+DQogICAgICAgICAgPC9HcmlkPg0KICAgICAgPC9XaW5kb3c+"))
+          # MainWindow.xaml.cs (código completo del editor)
+          [System.IO.File]::WriteAllBytes("QuantumEditor\MainWindow.xaml.cs", [System.Convert]::FromBase64String("dXNpbmcgU3lzdGVtOw0KdXNpbmcgU3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVySUM7DQp1c2luZyBTeXN0ZW0uQ29tcG9uZW50TW9kZWw7DQp1c2luZyBTeXN0ZW0uRHJhd2luZzsNCnVzaW5nIFN5c3RlbS5JTzsNCnVzaW5nIFN5c3RlbS5MaW5xOw0KdXNpbmcgU3lzdGVtLlJlZmxlY3Rpb247DQp1c2luZyBTeXN0ZW0uV2luZG93czsNCnVzaW5nIFN5c3RlbS5XaW5kb3dzLkNvbnRyb2xzOw0KdXNpbmcgU3lzdGVtLldpbmRvd3MuSW5wdXQ7DQp1c2luZyBTeXN0ZW0uV2luZG93cy5NZWRpYTsNCnVzaW5nIFN5c3RlbS5XaW5kb3dzLkZvcm1zOw0KdXNpbmcgU3lzdGVtLldpbmRvd3MuRm9ybXNJbnRlZ3JhdGlvbjsNCnVzaW5nIElDU2hhcnBDb2RlLkF2YWxvbkVkaXQ7DQp1c2luZyBJQ1NoYXJwQ29kZS5BdmFsb25FZGl0LkhpZ2hsaWdodGluZzsNCnVzaW5nIE1vb25TaGFycC5JbnRlcnByZXRlcjsNCnVzaW5nIFNraWFTaGFycDsNCnVzaW5nIFNraWFTaGFycC5WaWV3cy5EZXNrdG9wOw0KdXNpbmcgU2tpYVNoYXJwLlZpZXdzLldQRjsNCg0KbmFtZXNwYWNlIFF1YW50dW1FZGl0b3INCnsNCiAgICBwdWJsaWMgcGFydGlhbCBjbGFzcyBNYWluV2luZG93IDogV2luZG93DQogICAgew0KICAgICAgICBwcml2YXRlIEVkaXRvclNjZW5lIHNjZW5lID0gbmV3IEVkaXRvclNjZW5lKCk7DQogICAgICAgIHByaXZhdGUgVHJhbnNmb3JtVG9vbCBjdXJyZW50VG9vbCA9IFRyYW5zZm9ybVRvb2wuTW92ZTsNCiAgICAgICAgcHJpdmF0ZSBib29sIHNlbGVjdGlvbkxvY2tlZCA9IGZhbHNlOw0KICAgICAgICBwcml2YXRlIEVkaXRvckdhbWVPYmplY3Qgc2VsZWN0ZWRPYmplY3Q7DQogICAgICAgIHByaXZhdGUgU0tQb2ludCBsYXN0TW91c2VQb3M7DQogICAgICAgIHByaXZhdGUgYm9vbCBpc0RyYWdnaW5nID0gZmFsc2U7DQogICAgICAgIHByaXZhdGUgU0tQb2ludCBkcmFnU3RhcnQ7DQogICAgICAgIHByaXZhdGUgR2FtZVBsYXllcldpbmRvdyBnYW1lV2luZG93Ow0KICAgICAgICBwcml2YXRlIFByb3BlcnR5R3JpZCBpbnNwZWN0b3JHcmlkOw0KDQogICAgICAgIHB1YmxpYyBNYWluV2luZG93KCkNCiAgICAgICAgew0KICAgICAgICAgICAgSW5pdGlhbGl6ZUNvbXBvbmVudCgpOw0KDQogICAgICAgICAgICBpbnNwZWN0b3JHcmlkID0gbmV3IFByb3BlcnR5R3JpZCB7IERvY2sgPSBEb2NrU3R5bGUuRmlsbCwgUHJvcGVydHlTb3J0ID0gUHJvcGVydHlTb3J0LkFscGhhYmV0aWNhbCB9Ow0KICAgICAgICAgICAgSW5zcGVjdG9ySG9zdC5DaGlsZCA9IGluc3BlY3RvckdyaWQ7DQogICAgICAgICAgICBpbnNwZWN0b3JHcmlkLlByb3BlcnR5VmFsdWVDaGFuZ2VkICs9IE9uUHJvcGVydHlWYWx1ZUNoYW5nZWQ7DQoNCiAgICAgICAgICAgIFNjcmlwdEVkaXRvci5TeW50YXhIaWdobGlnaHRpbmcgPSBIaWdobGlnaHRpbmdNYW5hZ2VyLkluc3RhbmNlLkdldERlZmluaXRpb24oIkx1YSIpOw0KICAgICAgICAgICAgU2NyaXB0RWRpdG9yLlRleHRDaGFuZ2VkICs9IChzLCBlKSA9Pg0KICAgICAgICAgICAgew0KICAgICAgICAgICAgICAgIGlmIChzZWxlY3RlZE9iamVjdCAhPSBudWxsKSBzZWxlY3RlZE9iamVjdC5MdWFTY3JpcHQgPSBTY3JpcHRFZGl0b3IuVGV4dDsNCiAgICAgICAgICAgIH07DQoNCiAgICAgICAgICAgIFVwZGF0ZUV4cGxvcmVyKCk7DQogICAgICAgICAgICBWaWV3cG9ydEVsZW1lbnQuSW52YWxpZGF0ZVZpc3VhbCgpOw0KICAgICAgICB9DQoNCiAgICAgICAgcHJpdmF0ZSB2b2lkIE5ld1Byb2plY3RfQ2xpY2sob2JqZWN0IHNlbmRlciwgUm91dGVkRXZlbnRBcmdzIGUpIHsgLyogaW1wbGVtZW50YWNpw7NuIHBlbmRpZW50ZSAqLyB9DQogICAgICAgIHByaXZhdGUgdm9pZCBPcGVuUHJvamVjdF9DbGljayhvYmplY3Qgc2VuZGVyLCBSb3V0ZWRFdmVudEFyZ3MgZSkgeyB9DQogICAgICAgIHByaXZhdGUgdm9pZCBFeHBvcnRQcm9qZWN0X0NsaWNrKG9iamVjdCBzZW5kZXIsIFJvdXRlZEV2ZW50QXJncyBlKSB7IH0NCiAgICAgICAgcHJpdmF0ZSB2b2lkIEV4aXRfQ2xpY2sob2JqZWN0IHNlbmRlciwgUm91dGVkRXZlbnRBcmdzIGUpID0+IENsb3NlKCk7DQogICAgICAgIHByaXZhdGUgdm9pZCBVbmRvX0NsaWNrKG9iamVjdCBzZW5kZXIsIFJvdXRlZEV2ZW50QXJncyBlKSB7IH0NCiAgICAgICAgcHJpdmF0ZSB2b2lkIFJlZG9fQ2xpY2sob2JqZWN0IHNlbmRlciwgUm91dGVkRXZlbnRBcmdzIGUpIHsgfQ0KDQogICAgICAgIHByaXZhdGUgdm9pZCBFeHBsb3JlclRyZWVfU2VsZWN0ZWRJdGVtQ2hhbmdlZChvYmplY3Qgc2VuZGVyLCBSb3V0ZWRQcm9wZXJ0eUNoYW5nZWRFdmVudEFyZ3M8b2JqZWN0PiBlKQ0KICAgICAgICB7DQogICAgICAgICAgICBpZiAoZS5OZXdWYWx1ZSBpcyBUcmVlVmlld0l0ZW0gaXRlbSAmJiBpdGVtLlRhZyBpcyBFZGl0b3JHYW1lT2JqZWN0IG9iaikNCiAgICAgICAgICAgICAgICBTZWxlY3RPYmplY3Qob2JqKTsNCiAgICAgICAgfQ0KDQogICAgICAgIHByaXZhdGUgdm9pZCBTZWxlY3RPYmplY3QoRWRpdG9yR2FtZU9iamVjdCBvYmopDQogICAgICAgIHsNCiAgICAgICAgICAgIHNlbGVjdGVkT2JqZWN0ID0gb2JqOw0KICAgICAgICAgICAgaW5zcGVjdG9yR3JpZC5TZWxlY3RlZE9iamVjdCA9IG5ldyBHYW1lT2JqZWN0UHJvcGVydHlXcmFwcGVyKG9iaik7DQogICAgICAgICAgICBTY3JpcHRFZGl0b3IuVGV4dCA9IG9iai5MdWFTY3JpcHQgPz8gIiI7DQogICAgICAgICAgICBWaWV3cG9ydEVsZW1lbnQuSW52YWxpZGF0ZVZpc3VhbCgpOw0KICAgICAgICB9DQoNCiAgICAgICAgcHJpdmF0ZSB2b2lkIE9uUHJvcGVydHlWYWx1ZUNoYW5nZWQob2JqZWN0IHMsIFByb3BlcnR5VmFsdWVDaGFuZ2VkRXZlbnRBcmdzIGUpDQogICAgICAgIHsNCiAgICAgICAgICAgIFZpZXdwb3J0RWxlbWVudC5JbnZhbGlkYXRlVmlzdWFsKCk7DQogICAgICAgICAgICBpZiAoZS5DaGFuZ2VkSXRlbS5MYWJlbCA9PSAiTmFtZSIpIFVwZGF0ZUV4cGxvcmVyKCk7DQogICAgICAgIH0NCg0KICAgICAgICBwcml2YXRlIHZvaWQgVG9vbF9Nb3ZlX0NsaWNrKG9iamVjdCBzZW5kZXIsIFJvdXRlZEV2ZW50QXJncyBlKSA9PiBjdXJyZW50VG9vbCA9IFRyYW5zZm9ybVRvb2wuTW92ZTsNCiAgICAgICAgcHJpdmF0ZSB2b2lkIFRvb2xfUm90YXRlX0NsaWNrKG9iamVjdCBzZW5kZXIsIFJvdXRlZEV2ZW50QXJncyBlKSA9PiBjdXJyZW50VG9vbCA9IFRyYW5zZm9ybVRvb2wuUm90YXRlOw0KICAgICAgICBwcml2YXRlIHZvaWQgVG9vbF9TY2FsZV9DbGljayhvYmplY3Qgc2VuZGVyLCBSb3V0ZWRFdmVudEFyZ3MgZSkgPT4gY3VycmVudFRvb2wgPSBUcmFuc2Zvcm1Ub29sLlNjYWxlOw0KICAgICAgICBwcml2YXRlIHZvaWQgTG9ja1NlbGVjdGlvbl9DbGljayhvYmplY3Qgc2VuZGVyLCBSb3V0ZWRFdmVudEFyZ3MgZSkNCiAgICAgICAgew0KICAgICAgICAgICAgc2VsZWN0aW9uTG9ja2VkID0gKGUuU291cmNlIGFzIFN5c3RlbS5XaW5kb3dzLkNvbnRyb2xzLkNoZWNrQm94KT8uSXNDaGVja2VkID8/IGZhbHNlOw0KICAgICAgICB9DQoNCiAgICAgICAgcHJpdmF0ZSB2b2lkIFBsYXlfQ2xpY2sob2JqZWN0IHNlbmRlciwgUm91dGVkRXZlbnRBcmdzIGUpDQogICAgICAgIHsNCiAgICAgICAgICAgIGlmIChnYW1lV2luZG93ICE9IG51bGwpIHJldHVybjsNCiAgICAgICAgICAgIGdhbWVXaW5kb3cgPSBuZXcgR2FtZVBsYXllcldpbmRvdyhzY2VuZSk7DQogICAgICAgICAgICBnYW1lV2luZG93LkNsb3NlZCArPSAocywgZXYpID0+IGdhbWVXaW5kb3cgPSBudWxsOw0KICAgICAgICAgICAgZ2FtZVdpbmRvdy5TaG93KCk7DQogICAgICAgIH0NCiAgICAgICAgcHJpdmF0ZSB2b2lkIFN0b3BfQ2xpY2sob2JqZWN0IHNlbmRlciwgUm91dGVkRXZlbnRBcmdzIGUpID0+IGdhbWVXaW5kb3c/LkNsb3NlKCk7DQoNCiAgICAgICAgcHJpdmF0ZSB2b2lkIEFkZFNwcml0ZV9DbGljayhvYmplY3Qgc2VuZGVyLCBSb3V0ZWRFdmVudEFyZ3MgZSkNCiAgICAgICAgew0KICAgICAgICAgICAgdmFyIG9iaiA9IG5ldyBFZGl0b3JHYW1lT2JqZWN0DQogICAgICAgICAgICB7DQogICAgICAgICAgICAgICAgTmFtZSA9ICJTcHJpdGUiICsgKHNjZW5lLk9iamVjdHMuQ291bnQgKyAxKSwNCiAgICAgICAgICAgICAgICBYID0gMTAwICsgc2NlbmUuT2JqZWN0cy5Db3VudCAqIDMwLA0KICAgICAgICAgICAgICAgIFkgPSAxMDAsDQogICAgICAgICAgICAgICAgVyA9IDEwMCwNCiAgICAgICAgICAgICAgICBIID0gMTAwDQogICAgICAgICAgICB9Ow0KICAgICAgICAgICAgc2NlbmUuT2JqZWN0cy5BZGQob2JqKTsNCiAgICAgICAgICAgIFVwZGF0ZUV4cGxvcmVyKCk7DQogICAgICAgICAgICBWaWV3cG9ydEVsZW1lbnQuSW52YWxpZGF0ZVZpc3VhbCgpOw0KICAgICAgICB9DQoNCiAgICAgICAgcHJpdmF0ZSB2b2lkIE9uUGFpbnRTdXJmYWNlKG9iamVjdCBzZW5kZXIsIFNLUGFpbnRTdXJmYWNlRXZlbnRBcmdzIGUpDQogICAgICAgIHsNCiAgICAgICAgICAgIHZhciBjYW52YXMgPSBlLlN1cmZhY2UuQ2FudmFzOw0KICAgICAgICAgICAgY2FudmFzLkNsZWFyKFNrQ29sb3JzLkRhcmtTbGF0ZUdyYXkpOw0KICAgICAgICAgICAgdXNpbmcgdmFyIGdyaWRQYWludCA9IG5ldyBTS1BhaW50IHsgQ29sb3IgPSBTS0NvbG9ycy5XaGl0ZS5XaXRoQWxwaGEoMzApIH07DQogICAgICAgICAgICBmb3IgKGludCB4ID0gMDsgeCA8IGUuSW5mby5XaWR0aDsgeCArPSA1MCkgY2FudmFzLkRyYXdMaW5lKHgsIDAsIHgsIGUuSW5mby5IZWlnaHQsIGdyaWRQYWludCk7DQogICAgICAgICAgICBmb3IgKGludCB5ID0gMDsgeSA8IGUuSW5mby5IZWlnaHQ7IHkgKz0gNTApIGNhbnZhcy5EcmF3TGluZSgwLCB5LCBlLkluZm8uV2lkdGgsIHksIGdyaWRQYWludCk7DQogICAgICAgICAgICBmb3JlYWNoICh2YXIgb2JqIGluIHNjZW5lLk9iamVjdHMpDQogICAgICAgICAgICB7DQogICAgICAgICAgICAgICAgb2JqLlJlbmRlcihjYW52YXMpOw0KICAgICAgICAgICAgICAgIGlmIChvYmogPT0gc2VsZWN0ZWRPYmplY3QpDQogICAgICAgICAgICAgICAgew0KICAgICAgICAgICAgICAgICAgICB1c2luZyB2YXIgc2VsUGFpbnQgPSBuZXcgU0tQYWludCB7IFN0eWxlID0gU0tQYWludFN0eWxlLlN0cm9rZSwgQ29sb3IgPSBTS0NvbG9ycy5ZZWxsb3csIFN0cm9rZVdpZHRoID0gMiB9Ow0KICAgICAgICAgICAgICAgICAgICBjYW52YXMuRHJhd1JlY3Qob2JqLlgsIG9iai5ZLCBvYmouVywgb2JqLkgsIHNlbFBhaW50KTsNCiAgICAgICAgICAgICAgICB9DQogICAgICAgICAgICB9DQogICAgICAgIH0NCg0KICAgICAgICBwcml2YXRlIHZvaWQgT25WaWV3cG9ydE1vdXNlRG93bihvYmplY3Qgc2VuZGVyLCBNb3VzZUJ1dHRvbkV2ZW50QXJncyBlKQ0KICAgICAgICB7DQogICAgICAgICAgICB2YXIgcG9zID0gZS5HZXRQb3NpdGlvbihWaWV3cG9ydEVsZW1lbnQpOw0KICAgICAgICAgICAgdmFyIHNrUG9pbnQgPSBuZXcgU0tQb2ludCgoZmxvYXQpcG9zLlgsIChmbG9hdClwb3MuWSk7DQogICAgICAgICAgICBsYXN0TW91c2VQb3MgPSBza1BvaW50Ow0KICAgICAgICAgICAgZHJhZ1N0YXJ0ID0gc2tQb2ludDsNCiAgICAgICAgICAgIGlmICghc2VsZWN0aW9uTG9ja2VkICYmIGUuTGVmdEJ1dHRvbiA9PSBNb3VzZUJ1dHRvblN0YXRlLlByZXNzZWQpDQogICAgICAgICAgICB7DQogICAgICAgICAgICAgICAgdmFyIGhpdCA9IHNjZW5lLk9iamVjdHMuTGFzdE9yRGVmYXVsdChvID0+IG5ldyBTS1JlY3Qoby5YLCBvLlksIG8uWCArIG8uVywgby5ZICsgby5IKS5Db250YWlucyhza1BvaW50KSk7DQogICAgICAgICAgICAgICAgaWYgKGhpdCAhPSBudWxsKQ0KICAgICAgICAgICAgICAgIHsNCiAgICAgICAgICAgICAgICAgICAgU2VsZWN0T2JqZWN0KGhpdCk7DQogICAgICAgICAgICAgICAgICAgIGlzRHJhZ2dpbmcgPSB0cnVlOw0KICAgICAgICAgICAgICAgICAgICBWaWV3cG9ydEVsZW1lbnQuQ2FwdHVyZU1vdXNlKCk7DQogICAgICAgICAgICAgICAgfQ0KICAgICAgICAgICAgICAgIGVsc2UNCiAgICAgICAgICAgICAgICB7DQogICAgICAgICAgICAgICAgICAgIHNlbGVjdGVkT2JqZWN0ID0gbnVsbDsNCiAgICAgICAgICAgICAgICAgICAgaW5zcGVjdG9yR3JpZC5TZWxlY3RlZE9iamVjdCA9IG51bGw7DQogICAgICAgICAgICAgICAgICAgIFZpZXdwb3J0RWxlbWVudC5JbnZhbGlkYXRlVmlzdWFsKCk7DQogICAgICAgICAgICAgICAgfQ0KICAgICAgICAgICAgfQ0KICAgICAgICB9DQoNCiAgICAgICAgcHJpdmF0ZSB2b2lkIE9uVmlld3BvcnRNb3VzZU1vdmUob2JqZWN0IHNlbmRlciwgTW91c2VFdmVudEFyZ3MgZSkNCiAgICAgICAgew0KICAgICAgICAgICAgaWYgKCFpc0RyYWdnaW5nIHx8IHNlbGVjdGVkT2JqZWN0ID09IG51bGwpIHJldHVybjsNCiAgICAgICAgICAgIHZhciBwb3MgPSBlLkdldFBvc2l0aW9uKFZpZXdwb3J0RWxlbWVudCk7DQogICAgICAgICAgICB2YXIgY3VyID0gbmV3IFNLUG9pbnQoKGZsb2F0KXBvcy5YLCAoZmxvYXQpcG9zLlkpOw0KICAgICAgICAgICAgZmxvYXQgZHggPSBjdXIuWCAtIGxhc3RNb3VzZVBvcy5YOw0KICAgICAgICAgICAgZmxvYXQgZHkgPSBjdXIuWSAtIGxhc3RNb3VzZVBvcy5ZOw0KICAgICAgICAgICAgbGFzdE1vdXNlUG9zID0gY3VyOw0KICAgICAgICAgICAgc3dpdGNoIChjdXJyZW50VG9vbCkNCiAgICAgICAgICAgIHsNCiAgICAgICAgICAgICAgICBjYXNlIFRyYW5zZm9ybVRvb2wuTW92ZToNCiAgICAgICAgICAgICAgICAgICAgc2VsZWN0ZWRPYmplY3QuWCArPSBkeDsNCiAgICAgICAgICAgICAgICAgICAgc2VsZWN0ZWRPYmplY3QuWSArPSBkeTsNCiAgICAgICAgICAgICAgICAgICAgYnJlYWs7DQogICAgICAgICAgICAgICAgY2FzZSBUcmFuc2Zvcm1Ub29sLlJvdGF0ZToNCiAgICAgICAgICAgICAgICAgICAgdmFyIGNlbnRlciA9IG5ldyBTS1BvaW50KHNlbGVjdGVkT2JqZWN0LlggKyBzZWxlY3RlZE9iamVjdC5XIC8gMiwgc2VsZWN0ZWRPYmplY3QuWSArIHNlbGVjdGVkT2JqZWN0LkggLyAyKTsNCiAgICAgICAgICAgICAgICAgICAgZmxvYXQgYW5nbGUgPSAoZmxvYXQpTWF0aC5BdGFuMihjdXIuWSAtIGNlbnRlci5ZLCBjdXIuWCAtIGNlbnRlci5YKSAtIChmbG9hdClNYXRoLkF0YW4yKGRyYWdTdGFydC5ZIC0gY2VudGVyLlksIGRyYWdTdGFydC5YIC0gY2VudGVyLlgpOw0KICAgICAgICAgICAgICAgICAgICBzZWxlY3RlZE9iamVjdC5Sb3RhdGlvbiArPSBhbmdsZSAqICgxODAgLyAoZmxvYXQpTWF0aC5QSSk7DQogICAgICAgICAgICAgICAgICAgIGRyYWdTdGFydCA9IGN1cjsNCiAgICAgICAgICAgICAgICAgICAgYnJlYWs7DQogICAgICAgICAgICAgICAgY2FzZSBUcmFuc2Zvcm1Ub29sLlNjYWxlOg0KICAgICAgICAgICAgICAgICAgICBmbG9hdCBzY2FsZUZhY3RvciA9IDEgKyBkeCAvIHNlbGVjdGVkT2JqZWN0Llc7DQogICAgICAgICAgICAgICAgICAgIHNlbGVjdGVkT2JqZWN0LlcgKj0gc2NhbGVGYWN0b3I7DQogICAgICAgICAgICAgICAgICAgIHNlbGVjdGVkT2JqZWN0LkggKj0gMSArIGR5IC8gc2VsZWN0ZWRPYmplY3QuSDsNCiAgICAgICAgICAgICAgICAgICAgYnJlYWs7DQogICAgICAgICAgICB9DQogICAgICAgICAgICBWaWV3cG9ydEVsZW1lbnQuSW52YWxpZGF0ZVZpc3VhbCgpOw0KICAgICAgICB9DQoNCiAgICAgICAgcHJpdmF0ZSB2b2lkIE9uVmlld3BvcnRNb3VzZVVwKG9iamVjdCBzZW5kZXIsIE1vdXNlQnV0dG9uRXZlbnRBcmdzIGUpDQogICAgICAgIHsNCiAgICAgICAgICAgIGlzRHJhZ2dpbmcgPSBmYWxzZTsNCiAgICAgICAgICAgIFZpZXdwb3J0RWxlbWVudC5SZWxlYXNlTW91c2VDYXB0dXJlKCk7DQogICAgICAgIH0NCg0KICAgICAgICBwcml2YXRlIHZvaWQgVXBkYXRlRXhwbG9yZXIoKQ0KICAgICAgICB7DQogICAgICAgICAgICBFeHBsb3JlclRyZWUuSXRlbXMuQ2xlYXIoKTsNCiAgICAgICAgICAgIGZvcmVhY2ggKHZhciBvYmogaW4gc2NlbmUuT2JqZWN0cykNCiAgICAgICAgICAgIHsNCiAgICAgICAgICAgICAgICB2YXIgaXRlbSA9IG5ldyBUcmVlVmlld0l0ZW0geyBIZWFkZXIgPSBvYmouTmFtZSwgVGFnID0gb2JqIH07DQogICAgICAgICAgICAgICAgaXRlbS5Db250ZXh0TWVudSA9IG5ldyBTeXN0ZW0uV2luZG93cy5Db250cm9scy5Db250ZXh0TWVudSgpOw0KICAgICAgICAgICAgICAgIHZhciBkZWxldGVJdGVtID0gbmV3IFN5c3RlbS5XaW5kb3dzLkNvbnRyb2xzLk1lbnVJdGVtIHsgSGVhZGVyID0gIkVsaW1pbmFyIiB9Ow0KICAgICAgICAgICAgICAgIGRlbGV0ZUl0ZW0uQ2xpY2sgKz0gKHMsIGUpID0+DQogICAgICAgICAgICAgICAgew0KICAgICAgICAgICAgICAgICAgICBzY2VuZS5PYmplY3RzLlJlbW92ZShvYmopOw0KICAgICAgICAgICAgICAgICAgICBVcGRhdGVFeHBsb3JlcigpOw0KICAgICAgICAgICAgICAgICAgICBWaWV3cG9ydEVsZW1lbnQuSW52YWxpZGF0ZVZpc3VhbCgpOw0KICAgICAgICAgICAgICAgIH07DQogICAgICAgICAgICAgICAgaXRlbS5Db250ZXh0TWVudS5JdGVtcy5BZGQoZGVsZXRlSXRlbSk7DQogICAgICAgICAgICAgICAgRXhwbG9yZXJUcmVlLkl0ZW1zLkFkZChpdGVtKTsNCiAgICAgICAgICAgIH0NCiAgICAgICAgfQ0KDQogICAgICAgIGVudW0gVHJhbnNmb3JtVG9vbCB7IE1vdmUsIFJvdGF0ZSwgU2NhbGUgfQ0KICAgIH0NCg0KICAgIHB1YmxpYyBjbGFzcyBFZGl0b3JTY2VuZQ0KICAgIHsNCiAgICAgICAgcHVibGljIExpc3Q8RWRpdG9yR2FtZU9iamVjdD4gT2JqZWN0cyB7IGdldDsgc2V0OyB9ID0gbmV3IExpc3Q8RWRpdG9yR2FtZU9iamVjdD4oKTsNCiAgICB9DQoNCiAgICBwdWJsaWMgY2xhc3MgRWRpdG9yR2FtZU9iamVjdA0KICAgIHsNCiAgICAgICAgcHVibGljIHN0cmluZyBOYW1lIHsgZ2V0OyBzZXQ7IH0gPSAiT2JqZWN0IjsNCiAgICAgICAgcHVibGljIGZsb2F0IFggeyBnZXQ7IHNldDsgfQ0KICAgICAgICBwdWJsaWMgZmxvYXQgWSB7IGdldDsgc2V0OyB9DQogICAgICAgIHB1YmxpYyBmbG9hdCBXIHsgZ2V0OyBzZXQ7IH0gPSAxMDA7DQogICAgICAgIHB1YmxpYyBmbG9hdCBIIHsgZ2V0OyBzZXQ7IH0gPSAxMDA7DQogICAgICAgIHB1YmxpYyBmbG9hdCBSb3RhdGlvbiB7IGdldDsgc2V0OyB9DQogICAgICAgIHB1YmxpYyBzdHJpbmcgU3ByaXRlRmlsZSB7IGdldDsgc2V0OyB9DQogICAgICAgIHB1YmxpYyBzdHJpbmcgTHVhU2NyaXB0IHsgZ2V0OyBzZXQ7IH0NCg0KICAgICAgICBwdWJsaWMgdm9pZCBSZW5kZXIoU0tDYW52YXMgY2FudmFzKQ0KICAgICAgICB7DQogICAgICAgICAgICB1c2luZyB2YXIgcGFpbnQgPSBuZXcgU0tQYWludCB7IENvbG9yID0gU0tDb2xvcnMuQ29ybmZsb3dlckJsdWUgfTsNCiAgICAgICAgICAgIGNhbnZhcy5EcmF3UmVjdChYLCBZLCBXLCBILCBwYWludCk7DQogICAgICAgICAgICB1c2luZyB2YXIgb3V0bGluZSA9IG5ldyBTS1BhaW50IHsgU3R5bGUgPSBTS1BhaW50U3R5bGUuU3Ryb2tlLCBDb2xvciA9IFNLQ29sb3JzLkJsYWNrIH07DQogICAgICAgICAgICBjYW52YXMuRHJhd1JlY3QoWCwgWSwgVywgSCwgb3V0bGluZSk7DQogICAgICAgIH0NCiAgICB9DQoNCiAgICBwdWJsaWMgY2xhc3MgR2FtZU9iamVjdFByb3BlcnR5V3JhcHBlcg0KICAgIHsNCiAgICAgICAgcHJpdmF0ZSBFZGl0b3JHYW1lT2JqZWN0IG9iajsNCiAgICAgICAgcHVibGljIEdhbWVPYmplY3RQcm9wZXJ0eVdyYXBwZXIoRWRpdG9yR2FtZU9iamVjdCBvYmopIHsgdGhpcy5vYmogPSBvYmo7IH0NCg0KICAgICAgICBbQ2F0ZWdvcnkoIlRyYW5zZm9ybSIpXQ0KICAgICAgICBwdWJsaWMgc3RyaW5nIE5hbWUgeyBnZXQgPT4gb2JqLk5hbWU7IHNldCA9PiBvYmouTmFtZSA9IHZhbHVlOyB9DQogICAgICAgIFtDYXRlZ29yeSgiVHJhbnNmb3JtIildDQogICAgICAgIHB1YmxpYyBmbG9hdCBYIHsgZ2V0ID0+IG9iai5YOyBzZXQgPT4gb2JqLlggPSB2YWx1ZTsgfQ0KICAgICAgICBbQ2F0ZWdvcnkoIlRyYW5zZm9ybSIpXQ0KICAgICAgICBwdWJsaWMgZmxvYXQgWSB7IGdldCA9PiBvYmouWTsgc2V0ID0+IG9iai5ZID0gdmFsdWU7IH0NCiAgICAgICAgW0NhdGVnb3J5KCJUcmFuc2Zvcm0iKV0NCiAgICAgICAgcHVibGljIGZsb2F0IFdpZHRoIHsgZ2V0ID0+IG9iai5XOyBzZXQgPT4gb2JqLlcgPSB2YWx1ZTsgfQ0KICAgICAgICBbQ2F0ZWdvcnkoIlRyYW5zZm9ybSIpXQ0KICAgICAgICBwdWJsaWMgZmxvYXQgSGVpZ2h0IHsgZ2V0ID0+IG9iai5IOyBzZXQgPT4gb2JqLkggPSB2YWx1ZTsgfQ0KICAgICAgICBbQ2F0ZWdvcnkoIlRyYW5zZm9ybSIpXQ0KICAgICAgICBwdWJsaWMgZmxvYXQgUm90YXRpb24geyBnZXQgPT4gb2JqLlJvdGF0aW9uOyBzZXQgPT4gb2JqLlJvdGF0aW9uID0gdmFsdWU7IH0NCiAgICAgICAgW0NhdGVnb3J5KCJHcmFwaGljcyIpXQ0KICAgICAgICBwdWJsaWMgc3RyaW5nIFNwcml0ZSB7IGdldCA9PiBvYmouU3ByaXRlRmlsZTsgc2V0ID0+IG9iai5TcHJpdGVGaWxlID0gdmFsdWU7IH0NCiAgICB9DQoNCiAgICBwdWJsaWMgY2xhc3MgR2FtZVBsYXllcldpbmRvdyA6IEZvcm0NCiAgICB7DQogICAgICAgIHB1YmxpYyBHYW1lUGxheWVyV2luZG93KEVkaXRvclNjZW5lIHNjZW5lKQ0KICAgICAgICB7DQogICAgICAgICAgICBUZXh0ID0gIlF1YW50dW0gUGxheWVyIjsNCiAgICAgICAgICAgIERvdWJsZUJ1ZmZlcmVkID0gdHJ1ZTsNCiAgICAgICAgICAgIC8vIEltcGxlbWVudGFjacOzbiBmdXR1cmENCiAgICAgICAgfQ0KICAgIH0NCn0="))
         shell: pwsh
 
-      - name: Write MainWindow.xaml
-        run: |
-          @'
-          <Window x:Class="QuantumEditor.MainWindow"
-                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                  xmlns:avalonDock="https://github.com/Dirkster99/AvalonDock"
-                  xmlns:skia="clr-namespace:SkiaSharp.Views.WPF;assembly=SkiaSharp.Views.WPF"
-                  xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
-                  Title="Quantum Engine 2D" Height="800" Width="1200"
-                  Background="{StaticResource BackgroundDark}">
-              <Grid>
-                  <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto"/>
-                      <RowDefinition Height="*"/>
-                  </Grid.RowDefinitions>
-                  <Menu Grid.Row="0" Background="{StaticResource PanelDark}" Foreground="{StaticResource ForegroundLight}">
-                      <MenuItem Header="_Archivo">
-                          <MenuItem Header="_Nuevo proyecto..." Click="NewProject_Click"/>
-                          <MenuItem Header="_Abrir proyecto..." Click="OpenProject_Click"/>
-                          <Separator/>
-                          <MenuItem Header="_Exportar a .exe" Click="ExportProject_Click"/>
-                          <Separator/>
-                          <MenuItem Header="_Salir" Click="Exit_Click"/>
-                      </MenuItem>
-                      <MenuItem Header="_Editar">
-                          <MenuItem Header="_Deshacer" Click="Undo_Click"/>
-                          <MenuItem Header="_Rehacer" Click="Redo_Click"/>
-                      </MenuItem>
-                  </Menu>
-                  <avalonDock:DockingManager Grid.Row="1" x:Name="DockManager"
-                                            AllowMixedOrientation="True" BorderThickness="0"
-                                            Background="{StaticResource BackgroundDark}">
-                      <avalonDock:DockingManager.Theme>
-                          <avalonDock:Vs2013DarkTheme/>
-                      </avalonDock:DockingManager.Theme>
-                      <avalonDock:LayoutRoot>
-                          <avalonDock:LayoutPanel Orientation="Horizontal">
-                              <avalonDock:LayoutAnchorablePane DockWidth="250">
-                                  <avalonDock:LayoutAnchorable Title="Explorador" CanClose="False" CanAutoHide="False">
-                                      <TreeView x:Name="ExplorerTree" Background="{StaticResource BackgroundDark}"
-                                                Foreground="{StaticResource ForegroundLight}" BorderThickness="0"
-                                                SelectedItemChanged="ExplorerTree_SelectedItemChanged"/>
-                                  </avalonDock:LayoutAnchorable>
-                              </avalonDock:LayoutAnchorablePane>
-                              <avalonDock:LayoutDocumentPane>
-                                  <avalonDock:LayoutDocument Title="Escena" CanClose="False">
-                                      <Grid Background="{StaticResource BackgroundDark}">
-                                          <Grid.RowDefinitions>
-                                              <RowDefinition Height="Auto"/>
-                                              <RowDefinition Height="*"/>
-                                          </Grid.RowDefinitions>
-                                          <ToolBar Grid.Row="0" Background="{StaticResource PanelDark}">
-                                              <Button Content="Mover" Click="Tool_Move_Click"/>
-                                              <Button Content="Rotar" Click="Tool_Rotate_Click"/>
-                                              <Button Content="Escalar" Click="Tool_Scale_Click"/>
-                                              <Separator/>
-                                              <Button Content="▶ Play" Click="Play_Click"/>
-                                              <Button Content="■ Stop" Click="Stop_Click"/>
-                                              <Separator/>
-                                              <CheckBox Content="Bloquear selección" Click="LockSelection_Click"
-                                                        Foreground="{StaticResource ForegroundLight}" VerticalAlignment="Center"/>
-                                              <Separator/>
-                                              <Button Content="Añadir Sprite" Click="AddSprite_Click"/>
-                                          </ToolBar>
-                                          <skia:SKElement Grid.Row="1" x:Name="ViewportElement"
-                                                          PaintSurface="OnPaintSurface"
-                                                          MouseDown="OnViewportMouseDown"
-                                                          MouseMove="OnViewportMouseMove"
-                                                          MouseUp="OnViewportMouseUp"
-                                                          ClipToBounds="True"/>
-                                      </Grid>
-                                  </avalonDock:LayoutDocument>
-                              </avalonDock:LayoutDocumentPane>
-                              <avalonDock:LayoutAnchorablePane DockWidth="300">
-                                  <avalonDock:LayoutAnchorable Title="Inspector" CanClose="False" CanAutoHide="False">
-                                      <WindowsFormsHost x:Name="InspectorHost"/>
-                                  </avalonDock:LayoutAnchorable>
-                                  <avalonDock:LayoutAnchorable Title="Script Lua" CanClose="False" CanAutoHide="False">
-                                      <avalonedit:TextEditor x:Name="ScriptEditor" FontFamily="Consolas" FontSize="12"
-                                                             Background="#FF1E1E1E" Foreground="#FFDCDCDC" BorderThickness="0"
-                                                             SyntaxHighlighting="Lua"/>
-                                  </avalonDock:LayoutAnchorable>
-                              </avalonDock:LayoutAnchorablePane>
-                          </avalonDock:LayoutPanel>
-                      </avalonDock:LayoutRoot>
-                  </avalonDock:DockingManager>
-              </Grid>
-          </Window>
-          '@ | Set-Content QuantumEditor\MainWindow.xaml -Encoding UTF8
-        shell: pwsh
-
-      - name: Write MainWindow.xaml.cs
-        run: |
-          @'
-          using System;
-          using System.Collections.Generic;
-          using System.ComponentModel;
-          using System.Drawing;
-          using System.IO;
-          using System.Linq;
-          using System.Reflection;
-          using System.Windows;
-          using System.Windows.Controls;
-          using System.Windows.Input;
-          using System.Windows.Media;
-          using System.Windows.Forms;
-          using System.Windows.Forms.Integration;
-          using ICSharpCode.AvalonEdit;
-          using ICSharpCode.AvalonEdit.Highlighting;
-          using MoonSharp.Interpreter;
-          using SkiaSharp;
-          using SkiaSharp.Views.Desktop;
-          using SkiaSharp.Views.WPF;
-
-          namespace QuantumEditor
-          {
-              public partial class MainWindow : Window
-              {
-                  private EditorScene scene = new EditorScene();
-                  private TransformTool currentTool = TransformTool.Move;
-                  private bool selectionLocked = false;
-                  private EditorGameObject selectedObject;
-                  private SKPoint lastMousePos;
-                  private bool isDragging = false;
-                  private SKPoint dragStart;
-                  private GamePlayerWindow gameWindow;
-                  private PropertyGrid inspectorGrid;
-
-                  public MainWindow()
-                  {
-                      InitializeComponent();
-
-                      inspectorGrid = new PropertyGrid { Dock = DockStyle.Fill, PropertySort = PropertySort.Alphabetical };
-                      InspectorHost.Child = inspectorGrid;
-                      inspectorGrid.PropertyValueChanged += OnPropertyValueChanged;
-
-                      ScriptEditor.SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("Lua");
-                      ScriptEditor.TextChanged += (s, e) =>
-                      {
-                          if (selectedObject != null) selectedObject.LuaScript = ScriptEditor.Text;
-                      };
-
-                      UpdateExplorer();
-                      ViewportElement.InvalidateVisual();
-                  }
-
-                  private void NewProject_Click(object sender, RoutedEventArgs e) { /* implementación pendiente */ }
-                  private void OpenProject_Click(object sender, RoutedEventArgs e) { }
-                  private void ExportProject_Click(object sender, RoutedEventArgs e) { }
-                  private void Exit_Click(object sender, RoutedEventArgs e) => Close();
-                  private void Undo_Click(object sender, RoutedEventArgs e) { }
-                  private void Redo_Click(object sender, RoutedEventArgs e) { }
-
-                  private void ExplorerTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-                  {
-                      if (e.NewValue is TreeViewItem item && item.Tag is EditorGameObject obj)
-                          SelectObject(obj);
-                  }
-
-                  private void SelectObject(EditorGameObject obj)
-                  {
-                      selectedObject = obj;
-                      inspectorGrid.SelectedObject = new GameObjectPropertyWrapper(obj);
-                      ScriptEditor.Text = obj.LuaScript ?? "";
-                      ViewportElement.InvalidateVisual();
-                  }
-
-                  private void OnPropertyValueChanged(object s, PropertyValueChangedEventArgs e)
-                  {
-                      ViewportElement.InvalidateVisual();
-                      if (e.ChangedItem.Label == "Name") UpdateExplorer();
-                  }
-
-                  private void Tool_Move_Click(object sender, RoutedEventArgs e) => currentTool = TransformTool.Move;
-                  private void Tool_Rotate_Click(object sender, RoutedEventArgs e) => currentTool = TransformTool.Rotate;
-                  private void Tool_Scale_Click(object sender, RoutedEventArgs e) => currentTool = TransformTool.Scale;
-                  private void LockSelection_Click(object sender, RoutedEventArgs e)
-                  {
-                      selectionLocked = (e.Source as System.Windows.Controls.CheckBox)?.IsChecked ?? false;
-                  }
-
-                  private void Play_Click(object sender, RoutedEventArgs e)
-                  {
-                      if (gameWindow != null) return;
-                      gameWindow = new GamePlayerWindow(scene);
-                      gameWindow.Closed += (s, ev) => gameWindow = null;
-                      gameWindow.Show();
-                  }
-                  private void Stop_Click(object sender, RoutedEventArgs e) => gameWindow?.Close();
-
-                  private void AddSprite_Click(object sender, RoutedEventArgs e)
-                  {
-                      var obj = new EditorGameObject
-                      {
-                          Name = "Sprite" + (scene.Objects.Count + 1),
-                          X = 100 + scene.Objects.Count * 30,
-                          Y = 100,
-                          W = 100,
-                          H = 100
-                      };
-                      scene.Objects.Add(obj);
-                      UpdateExplorer();
-                      ViewportElement.InvalidateVisual();
-                  }
-
-                  private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
-                  {
-                      var canvas = e.Surface.Canvas;
-                      canvas.Clear(SKColors.DarkSlateGray);
-                      using var gridPaint = new SKPaint { Color = SKColors.White.WithAlpha(30) };
-                      for (int x = 0; x < e.Info.Width; x += 50) canvas.DrawLine(x, 0, x, e.Info.Height, gridPaint);
-                      for (int y = 0; y < e.Info.Height; y += 50) canvas.DrawLine(0, y, e.Info.Width, y, gridPaint);
-                      foreach (var obj in scene.Objects)
-                      {
-                          obj.Render(canvas);
-                          if (obj == selectedObject)
-                          {
-                              using var selPaint = new SKPaint { Style = SKPaintStyle.Stroke, Color = SKColors.Yellow, StrokeWidth = 2 };
-                              canvas.DrawRect(obj.X, obj.Y, obj.W, obj.H, selPaint);
-                          }
-                      }
-                  }
-
-                  private void OnViewportMouseDown(object sender, MouseButtonEventArgs e)
-                  {
-                      var pos = e.GetPosition(ViewportElement);
-                      var skPoint = new SKPoint((float)pos.X, (float)pos.Y);
-                      lastMousePos = skPoint;
-                      dragStart = skPoint;
-                      if (!selectionLocked && e.LeftButton == MouseButtonState.Pressed)
-                      {
-                          var hit = scene.Objects.LastOrDefault(o => new SKRect(o.X, o.Y, o.X + o.W, o.Y + o.H).Contains(skPoint));
-                          if (hit != null)
-                          {
-                              SelectObject(hit);
-                              isDragging = true;
-                              ViewportElement.CaptureMouse();
-                          }
-                          else
-                          {
-                              selectedObject = null;
-                              inspectorGrid.SelectedObject = null;
-                              ViewportElement.InvalidateVisual();
-                          }
-                      }
-                  }
-
-                  private void OnViewportMouseMove(object sender, MouseEventArgs e)
-                  {
-                      if (!isDragging || selectedObject == null) return;
-                      var pos = e.GetPosition(ViewportElement);
-                      var cur = new SKPoint((float)pos.X, (float)pos.Y);
-                      float dx = cur.X - lastMousePos.X;
-                      float dy = cur.Y - lastMousePos.Y;
-                      lastMousePos = cur;
-                      switch (currentTool)
-                      {
-                          case TransformTool.Move:
-                              selectedObject.X += dx;
-                              selectedObject.Y += dy;
-                              break;
-                          case TransformTool.Rotate:
-                              var center = new SKPoint(selectedObject.X + selectedObject.W / 2, selectedObject.Y + selectedObject.H / 2);
-                              float angle = (float)Math.Atan2(cur.Y - center.Y, cur.X - center.X) -
-                                            (float)Math.Atan2(dragStart.Y - center.Y, dragStart.X - center.X);
-                              selectedObject.Rotation += angle * (180 / (float)Math.PI);
-                              dragStart = cur;
-                              break;
-                          case TransformTool.Scale:
-                              float scaleFactor = 1 + dx / selectedObject.W;
-                              selectedObject.W *= scaleFactor;
-                              selectedObject.H *= 1 + dy / selectedObject.H;
-                              break;
-                      }
-                      ViewportElement.InvalidateVisual();
-                  }
-
-                  private void OnViewportMouseUp(object sender, MouseButtonEventArgs e)
-                  {
-                      isDragging = false;
-                      ViewportElement.ReleaseMouseCapture();
-                  }
-
-                  private void UpdateExplorer()
-                  {
-                      ExplorerTree.Items.Clear();
-                      foreach (var obj in scene.Objects)
-                      {
-                          var item = new TreeViewItem { Header = obj.Name, Tag = obj };
-                          item.ContextMenu = new System.Windows.Controls.ContextMenu();
-                          var deleteItem = new System.Windows.Controls.MenuItem { Header = "Eliminar" };
-                          deleteItem.Click += (s, e) =>
-                          {
-                              scene.Objects.Remove(obj);
-                              UpdateExplorer();
-                              ViewportElement.InvalidateVisual();
-                          };
-                          item.ContextMenu.Items.Add(deleteItem);
-                          ExplorerTree.Items.Add(item);
-                      }
-                  }
-
-                  enum TransformTool { Move, Rotate, Scale }
-              }
-
-              public class EditorScene
-              {
-                  public List<EditorGameObject> Objects { get; set; } = new List<EditorGameObject>();
-              }
-
-              public class EditorGameObject
-              {
-                  public string Name { get; set; } = "Object";
-                  public float X { get; set; }
-                  public float Y { get; set; }
-                  public float W { get; set; } = 100;
-                  public float H { get; set; } = 100;
-                  public float Rotation { get; set; }
-                  public string SpriteFile { get; set; }
-                  public string LuaScript { get; set; }
-
-                  public void Render(SKCanvas canvas)
-                  {
-                      using var paint = new SKPaint { Color = SKColors.CornflowerBlue };
-                      canvas.DrawRect(X, Y, W, H, paint);
-                      using var outline = new SKPaint { Style = SKPaintStyle.Stroke, Color = SKColors.Black };
-                      canvas.DrawRect(X, Y, W, H, outline);
-                  }
-              }
-
-              public class GameObjectPropertyWrapper
-              {
-                  private EditorGameObject obj;
-                  public GameObjectPropertyWrapper(EditorGameObject obj) { this.obj = obj; }
-
-                  [Category("Transform")]
-                  public string Name { get => obj.Name; set => obj.Name = value; }
-                  [Category("Transform")]
-                  public float X { get => obj.X; set => obj.X = value; }
-                  [Category("Transform")]
-                  public float Y { get => obj.Y; set => obj.Y = value; }
-                  [Category("Transform")]
-                  public float Width { get => obj.W; set => obj.W = value; }
-                  [Category("Transform")]
-                  public float Height { get => obj.H; set => obj.H = value; }
-                  [Category("Transform")]
-                  public float Rotation { get => obj.Rotation; set => obj.Rotation = value; }
-                  [Category("Graphics")]
-                  public string Sprite { get => obj.SpriteFile; set => obj.SpriteFile = value; }
-              }
-
-              public class GamePlayerWindow : Form
-              {
-                  public GamePlayerWindow(EditorScene scene)
-                  {
-                      Text = "Quantum Player";
-                      DoubleBuffered = true;
-                      // Implementación futura
-                  }
-              }
-          }
-          '@ | Set-Content QuantumEditor\MainWindow.xaml.cs -Encoding UTF8
-        shell: pwsh
-
-      - name: Build
+      - name: Compilar
         run: |
           cd QuantumEditor
           dotnet restore
           dotnet build -c Release -o ../dist
         shell: pwsh
 
-      - name: Upload artifact
+      - name: Subir artefacto
         uses: actions/upload-artifact@v4
         with:
           name: Quantum-Engine
